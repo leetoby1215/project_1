@@ -30,46 +30,39 @@ void eliminate(bool *matrix, int matrix_rows, int matrix_cols) {
     }
 }
 
-void block(bool *matrix, int matrix_rows, int matrix_cols,bool *block, int block_rows, int block_cols, int col) {
+void block(bool *matrix, int matrix_rows, int matrix_cols, bool *block, int block_rows, int block_cols, int col) {
     bool *p = matrix + col - 1;
     int row = block_rows - 1;
 
     if (col + block_cols - 1 > matrix_cols) {
         throw "Error input!";
     }
-
     while (row < matrix_rows) {
         bool *q = p + matrix_cols;
         bool *r = block;
         bool check = 0;
-        for (int i = 0; i < block_rows && row < matrix_rows; ++i) {
+        for (int i = 0; i < block_rows; ++i) {
             for (int j = 0; j < block_cols; ++j) {
                 if (*q && *r) {
                     check = 1;
                 }
-                ++r;
-                ++q;
+                ++r; ++q;
             }
             q = q + matrix_cols - block_cols;
         }
-        q = p;
-        r = block;
+        q = p; r = block;
         if (check || row == matrix_rows - 1) {
             for (int i = 0; i < block_rows; ++i) {
                 for (int j = 0; j < block_cols; ++j) {
                     *q = (*r) ? 1 : *q;
-                    ++r;
-                    ++q;
+                    ++r; ++q;
                 }
                 q = q + matrix_cols - block_cols;
             }
             break;
         }
-        p += matrix_cols;
-        ++row;
+        p += matrix_cols; ++row;
     }
-
-    
     eliminate(matrix, matrix_rows, matrix_cols);
 }
 
@@ -98,28 +91,22 @@ int main() {
     string s;
 
     ifstream fin("tetris.data");
-
     fin >> rows >> cols;
-    if (rows > 40 || cols > 15) {
+    if (rows > 40 || cols > 15)
         throw "Error! The size of row or col is too large!";
-    }
-    if (rows < 1 || cols < 1) {
+    if (rows < 1 || cols < 1)
         throw "Error! The size of row or col is too small!";
-    }
     rows += 4;
 
     bool *matrix = new bool[rows * cols];
-
-    for (int i = 0; i < rows * cols; ++i) {
+    for (int i = 0; i < rows * cols; ++i)
         matrix[i] = 0;
-    }
 
     while (!is_game_over) {
         int col;
         fin >> s;
-        if (s == "End") {
+        if (s == "End")
             break;
-        }
         fin >> col;
         if (s == "T1") {
             block(matrix, rows, cols, T1, 2, 3, col);
@@ -162,16 +149,12 @@ int main() {
         } else {
             throw "Matching blocks is Error!";
         }
-        for (int i = 0; i < cols * 4; ++i) {
-            if (matrix[i]) {
+        for (int i = 0; i < cols * 4; ++i)
+            if (matrix[i])
                 is_game_over = 1;
-            }
-        }
     }
-
     fin.close();
     ofstream fout("tetris.output");
-
     for (int i = 4; i < rows; ++i) {
         for (int j = 0; j < cols; ++j) {
             fout << matrix[i * cols + j];
