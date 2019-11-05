@@ -6,10 +6,13 @@ class graph;
 class node {
 friend class graph;
 private:
-    int *vertex;
+    int vertex[2];
     node* next;
 public:
-    node(int *vertex): vertex(vertex), next(NULL) {}
+    node(int *des): next(NULL) {
+        vertex[0] = des[0];
+        vertex[1] = des[1];
+    }
 };
 
 class graph {
@@ -19,27 +22,27 @@ private:
     int chargeVertex[2];
     node*** lists;
 public:
-    graph(char** map, int col, int rol): row(row), col(col), lists(NULL) {
+    graph(char** map, int row, int col): row(row), col(col), lists(NULL) {
         lists = new node**[row];
         for (int i = 0; i < row; ++i) {
             lists[i] = new node*[col];
             for (int j = 0; j < col; ++j) {
                 lists[i][j] = NULL;
                 if (map[i][j] != '1') {
-                    int src[2] = {i, j};s
-                    if (map[i + 1][j] == '0' || map[i + 1][j] == 'R') {
+                    int src[2] = {i, j};
+                    if (i + 1 < row && map[i + 1][j] != '1') {
                         int des[2] = {i + 1, j};
                         addEdge(src, des);
                     }
-                    if (map[i - 1][j] == '0' || map[i - 1][j] == 'R') {
+                    if (i - 1 >= 0 && map[i - 1][j] != '1') {
                         int des[2] = {i - 1, j};
                         addEdge(src, des);
                     }
-                    if (map[i][j + 1] == '0' || map[i][j + 1] == 'R') {
+                    if (j + 1 < col && map[i][j + 1] != '1') {
                         int des[2] = {i, j + 1};
                         addEdge(src, des);
                     }
-                    if (map[i][j - 1] == '0' || map[i][j - 1] == 'R') {
+                    if (j - 1 >= 0 && map[i][j - 1] != '1') {
                         int des[2] = {i, j - 1};
                         addEdge(src, des);
                     }
@@ -113,8 +116,10 @@ int main() {
     char **map;
 
     cin >> row >> col >> battery;
-    if (row > 1000 || col > 1000)
-        throw "Invalid size!";
+    if (row > 1000 || col > 1000) {
+        cout << "Invalid size!";
+        exit(-1);
+    }
     map = new char*[row];
     for (int i = 0; i < row; ++i) {
         char input;
