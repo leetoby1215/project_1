@@ -2,9 +2,11 @@
 using namespace std;
 
 class graph;
+class queue;
 
 class node {
 friend class graph;
+friend class queue;
 private:
     int vertex[2];
     node* next;
@@ -15,14 +17,59 @@ public:
     }
 };
 
+class queue {
+private:
+    node* Front;
+    node* Back;
+public:
+    queue(): Front(NULL), Back(NULL) {}
+    void push(int* ver) {
+        node* newNode = new node(ver);
+        if (!Front && !Back) {
+            Front = newNode;
+            Back = newNode;
+        } else {
+            Back->next = newNode;
+            Back = newNode;
+        }
+    }
+    void pop() {
+        if (!Front && !Back) {
+            cout << "The queue is empty!" << endl;
+            exit(-1);
+        } else {
+            node* tmp = Front;
+            Front = Front->next;
+            delete tmp;
+            tmp = NULL;
+            if (!Front) {
+                Back = NULL;
+            }
+        }
+    }
+    bool empty() {
+        return !(Front && Back);
+    }
+    int* front() {
+        return Front->vertex;
+    }
+    int* back() {
+        return Back->vertex;
+    }
+};
+
 class graph {
 private:
+    char** map;
     int row;
     int col;
-    int chargeVertex[2];
+    int battery;
+    int longest_distance;
+    int start[2];
     node*** lists;
 public:
-    graph(char** map, int row, int col): row(row), col(col), lists(NULL) {
+    graph(char** map, int row, int col, int battery):
+    map(map), row(row), col(col), battery(battery), longest_distance(0), lists(NULL) {
         lists = new node**[row];
         for (int i = 0; i < row; ++i) {
             lists[i] = new node*[col];
@@ -47,6 +94,10 @@ public:
                         addEdge(src, des);
                     }
                 }
+                if (map[i][j] == 'R') {
+                    start[0] = i;
+                    start[1] = j;
+                }
             }
         }
     }
@@ -62,19 +113,64 @@ public:
         }
         current->next = newNode;
     }
-    void print() {
+    void BFS_check() {
+        BFS_check(start);
+        if (longest_distance * 2 > battery) {
+            cout << "Lack of power!" << endl;
+            exit(-1);
+        }
+    }
+    void BFS_check(int* src) {
+        bool** visited;
+        int** distance;
+        int* vertex;
         node* current;
+        queue q;
+
+        q.push(src);
+        visited = new bool*[row];
+        distance = new int*[row];
         for (int i = 0; i < row; ++i) {
+            visited[i] = new bool[col];
+            distance[i] = new int[col];
             for (int j = 0; j < col; ++j) {
-                if (lists[i][j]) {
-                    current = lists[i][j];
-                    while (current) {
-                        cout << '(' << i << ", " << j << ')' << "---->" << '(' << current->vertex[0] << ", " << current->vertex[1] << ')' << endl;
-                        current = current->next;
-                    }
-                }
+                visited[i][j] = false;
+                distance[i][j] = 0;
             }
         }
+        visited[src[0]][src[1]] = true;
+        while (!q.empty()) {
+            int* w;
+
+            src = q.front();
+            w[0] = src[0];
+            w[1] = src[1];
+            current = lists[w[0]][w[1]];
+            q.pop();
+            while (current) {
+                vertex = current->vertex;
+                if (!visited[vertex[0]][vertex[1]]) {
+                    q.push(vertex);
+                    visited[vertex[0]][vertex[1]] = true;
+                    distance[vertex[0]][vertex[1]] = distance[w[0]][w[1]] + 1;
+                }
+                current = current->next;
+            }
+        }
+        for (int i = 0; i < row; ++i) {
+            for (int j = 0; j < col; ++j) {
+                if (map[i][j] != '1' && !visited[i][j]) {
+                    cout << "Exist unreachable free cells!" << endl;
+                    exit(-1);
+                }
+                if (longest_distance < distance[i][j])
+                    longest_distance = distance[i][j];
+            }
+        }
+        delete visited;
+        visited = NULL;
+        delete distance;
+        distance = NULL;
     }
 };
 
@@ -131,7 +227,8 @@ int main() {
     }
     check_test_case(map, row, col, battery);
     
-    graph g(map, row, col);
-    g.print();
+    graph g(map, row, col, battery);
+    g.BFS_check();
+
     return 0;
 }
