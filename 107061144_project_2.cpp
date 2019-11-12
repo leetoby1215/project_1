@@ -71,10 +71,11 @@ private:
     int clean_num;
     int cleaned_num;
     int longest_distance;
+    int steps;
     int start[2];
 public:
     graph(char** map, int row, int col, int battery):
-    map(map), row(row), col(col), battery(battery), clean_num(0), cleaned_num(0), longest_distance(0) {
+    map(map), row(row), col(col), battery(battery), clean_num(0), cleaned_num(0), longest_distance(0), steps(0) {
         lists = new node**[row];
         predecessor = new int**[row];
         distance = new int*[row];
@@ -195,6 +196,11 @@ public:
         int dist;
         int charge;
         int m, n;
+
+        finish[start[0]][start[1]] = true;
+        ++cleaned_num;
+        ++steps;
+        cout << start[0] << ' ' << start[1] << endl;
         while (cleaned_num < clean_num) {
             dist = 0;
             for (int i = 0; i < row; ++i) {
@@ -209,27 +215,30 @@ public:
                 }
             }
             charge = battery;
-            int** path = new int*[dist + 1];
-            for (int i = 0; i < dist + 1; ++i) {
+            int** path = new int*[dist];
+            for (int i = 0; i < dist; ++i) {
                 path[i] = new int[2];
             }
-            path[dist][0] = farthest[0];
-            path[dist][1] = farthest[1];
             for (int i = dist - 1; i >= 0; --i) {
+                path[i][0] = farthest[0];
+                path[i][1] = farthest[1];
                 w[0] = farthest[0];
                 w[1] = farthest[1];
                 farthest[0] = predecessor[w[0]][w[1]][0];
                 farthest[1] = predecessor[w[0]][w[1]][1];
-                path[i][0] = farthest[0];
-                path[i][1] = farthest[1];
             }
-            for (int i = 0; i <= dist; ++i) {
-                finish[path[i][0]][path[i][1]] = true;
-                ++cleaned_num;
+            for (int i = 0; i < dist; ++i) {
+                cout << path[i][0] << ' ' << path[i][1] << endl;
+            }
+            for (int i = 0; i < dist; ++i) {
+                if (!finish[path[i][0]][path[i][1]]) {
+                    finish[path[i][0]][path[i][1]] = true;
+                    ++cleaned_num;
+                }
                 --charge;
+                ++steps;
             }
-            break;
-            while (charge > distance[m][n]) {
+            while (charge > distance[m][n] + 1) {
                 if (!finish[m + 1][n])
                     m = m + 1;
                 else if (!finish[m - 1][n])
@@ -242,8 +251,24 @@ public:
                     break;
                 finish[m][n] = true;
                 ++cleaned_num;
+                ++steps;
                 --charge;
+                cout << m << ' ' << n << endl;
             }
+            dist = distance[m][n];
+            for (int i = 0; i < dist; ++i) {
+                w[0] = predecessor[m][n][0];
+                w[1] = predecessor[m][n][1];
+                m = w[0];
+                n = w[1];
+                if (!finish[m][n]) {
+                    finish[m][n] = true;
+                    ++cleaned_num;
+                }
+                ++steps;
+                cout << m << ' ' << n << endl;
+            }
+            delete path;
         }
     }
     void print() {
@@ -253,6 +278,7 @@ public:
             }
             cout << endl;
         }
+        cout << steps;
     }
 };
 
