@@ -60,23 +60,38 @@ public:
 
 class graph {
 private:
+    node*** lists;
     char** map;
+    bool** finish;
+    int*** predecessor;
+    int** distance;
     int row;
     int col;
     int battery;
+    int clean_num;
+    int cleaned_num;
     int longest_distance;
     int start[2];
-    node*** lists;
 public:
     graph(char** map, int row, int col, int battery):
-    map(map), row(row), col(col), battery(battery), longest_distance(0), lists(NULL) {
+    map(map), row(row), col(col), battery(battery), clean_num(0), cleaned_num(0), longest_distance(0) {
         lists = new node**[row];
+        predecessor = new int**[row];
+        distance = new int*[row];
+        finish = new bool*[row];
         for (int i = 0; i < row; ++i) {
             lists[i] = new node*[col];
+            predecessor[i] = new int*[col];
+            distance[i] = new int[col];
+            finish[i] = new bool[col];
             for (int j = 0; j < col; ++j) {
                 lists[i][j] = NULL;
+                predecessor[i][j] = NULL;
+                distance[i][j] = 0;
+                finish[i][j] = false;
                 if (map[i][j] != '1') {
                     int src[2] = {i, j};
+                    ++clean_num;
                     if (i + 1 < row && map[i + 1][j] != '1') {
                         int des[2] = {i + 1, j};
                         addEdge(src, des);
@@ -122,26 +137,21 @@ public:
     }
     void BFS_check(int* src) {
         bool** visited;
-        int** distance;
         int* vertex;
         node* current;
         queue q;
 
         q.push(src);
         visited = new bool*[row];
-        distance = new int*[row];
         for (int i = 0; i < row; ++i) {
             visited[i] = new bool[col];
-            distance[i] = new int[col];
             for (int j = 0; j < col; ++j) {
                 visited[i][j] = false;
-                distance[i][j] = 0;
             }
         }
         visited[src[0]][src[1]] = true;
         while (!q.empty()) {
-            int* w;
-
+            int w[2];
             src = q.front();
             w[0] = src[0];
             w[1] = src[1];
@@ -169,8 +179,20 @@ public:
         }
         delete visited;
         visited = NULL;
-        delete distance;
-        distance = NULL;
+    }
+    void cleaning() {
+        while (cleaned_num < clean_num) {
+            
+        }
+    }
+    void print() {
+        cout << clean_num << endl;
+        for (int i = 0; i < row; ++i) {
+            for (int j = 0; j < col; ++j) {
+                cout << distance[i][j] << ' ';
+            }
+            cout << endl;
+        }
     }
 };
 
@@ -229,6 +251,7 @@ int main() {
     
     graph g(map, row, col, battery);
     g.BFS_check();
+    g.print();
 
     return 0;
 }
