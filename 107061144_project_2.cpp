@@ -86,9 +86,15 @@ public:
             finish[i] = new bool[col];
             for (int j = 0; j < col; ++j) {
                 lists[i][j] = NULL;
-                predecessor[i][j] = NULL;
-                distance[i][j] = 0;
-                finish[i][j] = false;
+                predecessor[i][j] = new int[2];
+                predecessor[i][j][0] = -1;
+                predecessor[i][j][1] = -1;
+                distance[i][j] = -1;
+                if (map[i][j] == '1') {
+                    finish[i][j] = true;
+                } else {
+                    finish[i][j] = false;
+                }
                 if (map[i][j] != '1') {
                     int src[2] = {i, j};
                     ++clean_num;
@@ -150,6 +156,7 @@ public:
             }
         }
         visited[src[0]][src[1]] = true;
+        distance[src[0]][src[1]] = 0;
         while (!q.empty()) {
             int w[2];
             src = q.front();
@@ -162,6 +169,8 @@ public:
                 if (!visited[vertex[0]][vertex[1]]) {
                     q.push(vertex);
                     visited[vertex[0]][vertex[1]] = true;
+                    predecessor[vertex[0]][vertex[1]][0] = w[0];
+                    predecessor[vertex[0]][vertex[1]][1] = w[1];
                     distance[vertex[0]][vertex[1]] = distance[w[0]][w[1]] + 1;
                 }
                 current = current->next;
@@ -181,15 +190,66 @@ public:
         visited = NULL;
     }
     void cleaning() {
+        int farthest[2];
+        int w[2];
+        int dist;
+        int charge;
+        int m, n;
         while (cleaned_num < clean_num) {
-            
+            dist = 0;
+            for (int i = 0; i < row; ++i) {
+                for (int j = 0; j < col; ++j) {
+                    if (!finish[i][j] && distance[i][j] > dist) {
+                        dist = distance[i][j];
+                        farthest[0] = i;
+                        farthest[1] = j;
+                        m = i;
+                        n = j;
+                    }
+                }
+            }
+            charge = battery;
+            int** path = new int*[dist + 1];
+            for (int i = 0; i < dist + 1; ++i) {
+                path[i] = new int[2];
+            }
+            path[dist][0] = farthest[0];
+            path[dist][1] = farthest[1];
+            for (int i = dist - 1; i >= 0; --i) {
+                w[0] = farthest[0];
+                w[1] = farthest[1];
+                farthest[0] = predecessor[w[0]][w[1]][0];
+                farthest[1] = predecessor[w[0]][w[1]][1];
+                path[i][0] = farthest[0];
+                path[i][1] = farthest[1];
+            }
+            for (int i = 0; i <= dist; ++i) {
+                finish[path[i][0]][path[i][1]] = true;
+                ++cleaned_num;
+                --charge;
+            }
+            break;
+            while (charge > distance[m][n]) {
+                if (!finish[m + 1][n])
+                    m = m + 1;
+                else if (!finish[m - 1][n])
+                    m = m - 1;
+                else if (!finish[m][n + 1])
+                    n = n + 1;
+                else if (!finish[m][n - 1])
+                    n = n - 1;
+                else
+                    break;
+                finish[m][n] = true;
+                ++cleaned_num;
+                --charge;
+            }
         }
     }
     void print() {
-        cout << clean_num << endl;
         for (int i = 0; i < row; ++i) {
             for (int j = 0; j < col; ++j) {
-                cout << distance[i][j] << ' ';
+                cout << finish[i][j] << ' ';
             }
             cout << endl;
         }
@@ -251,7 +311,7 @@ int main() {
     
     graph g(map, row, col, battery);
     g.BFS_check();
+    g.cleaning();
     g.print();
-
     return 0;
 }
