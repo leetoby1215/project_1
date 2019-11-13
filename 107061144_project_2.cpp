@@ -61,9 +61,9 @@ public:
 class graph {
 private:
     node*** lists;
-    char** map;
-    bool** finish;
     int*** predecessor;
+    bool** finish;
+    char** map;
     int** distance;
     int row;
     int col;
@@ -199,7 +199,6 @@ public:
 
         finish[start[0]][start[1]] = true;
         ++cleaned_num;
-        ++steps;
         cout << start[0] << ' ' << start[1] << endl;
         while (cleaned_num < clean_num) {
             dist = 0;
@@ -238,14 +237,14 @@ public:
                 --charge;
                 ++steps;
             }
-            while (charge > distance[m][n] + 1) {
-                if (!finish[m + 1][n])
+            while (charge >= distance[m][n]) {
+                if (!finish[m + 1][n] && charge - 1 >= distance[m + 1][n])
                     m = m + 1;
-                else if (!finish[m - 1][n])
+                else if (!finish[m - 1][n] && charge - 1 >= distance[m - 1][n])
                     m = m - 1;
-                else if (!finish[m][n + 1])
+                else if (!finish[m][n + 1] && charge - 1 >= distance[m][n + 1])
                     n = n + 1;
-                else if (!finish[m][n - 1])
+                else if (!finish[m][n - 1] && charge - 1 >= distance[m][n - 1])
                     n = n - 1;
                 else
                     break;
@@ -272,13 +271,7 @@ public:
         }
     }
     void print() {
-        for (int i = 0; i < row; ++i) {
-            for (int j = 0; j < col; ++j) {
-                cout << finish[i][j] << ' ';
-            }
-            cout << endl;
-        }
-        cout << steps;
+        cout << steps << endl;
     }
 };
 
@@ -300,9 +293,6 @@ void check_test_case(char **map, int row, int col, int battery) {
                     cout << "Exist invalid parameter!";
                     exit(-1);
                 }
-            } else if (map[i][j] == 'R') {
-                cout << "The location of R must be at the walls!";
-                exit(-1);
             }
             if (map[i][j] == 'R')
                 ++number_of_R;
