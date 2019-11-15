@@ -1,5 +1,9 @@
 #include <iostream>
+#include <fstream>
 using namespace std;
+
+ifstream fin("floor.data");
+ofstream fout("tmp.data");
 
 class graph;
 class queue;
@@ -35,7 +39,7 @@ public:
     }
     void pop() {
         if (!Front && !Back) {
-            cout << "The queue is empty!" << endl;
+            fout << "The queue is empty!" << endl;
             exit(-1);
         } else {
             node* tmp = Front;
@@ -138,7 +142,7 @@ public:
     void BFS_check() {
         BFS_check(start);
         if (longest_distance * 2 > battery) {
-            cout << "Lack of power!" << endl;
+            fout << "Lack of power!" << endl;
             exit(-1);
         }
     }
@@ -180,7 +184,7 @@ public:
         for (int i = 0; i < row; ++i) {
             for (int j = 0; j < col; ++j) {
                 if (map[i][j] != '1' && !visited[i][j]) {
-                    cout << "Exist unreachable free cells!" << endl;
+                    fout << "Exist unreachable free cells!" << endl;
                     exit(-1);
                 }
                 if (longest_distance < distance[i][j])
@@ -199,7 +203,7 @@ public:
 
         finish[start[0]][start[1]] = true;
         ++cleaned_num;
-        cout << start[0] << ' ' << start[1] << endl;
+        fout << start[0] << ' ' << start[1] << endl;
         while (cleaned_num < clean_num) {
             dist = 0;
             for (int i = 0; i < row; ++i) {
@@ -227,7 +231,7 @@ public:
                 farthest[1] = predecessor[w[0]][w[1]][1];
             }
             for (int i = 0; i < dist; ++i) {
-                cout << path[i][0] << ' ' << path[i][1] << endl;
+                fout << path[i][0] << ' ' << path[i][1] << endl;
             }
             for (int i = 0; i < dist; ++i) {
                 if (!finish[path[i][0]][path[i][1]]) {
@@ -238,21 +242,37 @@ public:
                 ++steps;
             }
             while (charge >= distance[m][n]) {
-                if (!finish[m + 1][n] && charge - 1 >= distance[m + 1][n])
+                if (!finish[m + 1][n] && charge - 1 >= distance[m + 1][n]) {
                     m = m + 1;
-                else if (!finish[m - 1][n] && charge - 1 >= distance[m - 1][n])
+                    finish[m][n] = true;
+                    ++cleaned_num;
+                } else if (!finish[m - 1][n] && charge - 1 >= distance[m - 1][n]) {
                     m = m - 1;
-                else if (!finish[m][n + 1] && charge - 1 >= distance[m][n + 1])
+                    finish[m][n] = true;
+                    ++cleaned_num;
+                } else if (!finish[m][n + 1] && charge - 1 >= distance[m][n + 1]) {
                     n = n + 1;
-                else if (!finish[m][n - 1] && charge - 1 >= distance[m][n - 1])
+                    finish[m][n] = true;
+                    ++cleaned_num;
+                } else if (!finish[m][n - 1] && charge - 1 >= distance[m][n - 1]) {
                     n = n - 1;
-                else
+                    ++cleaned_num;
+                } else if (map[m + 1][n] != '1' && charge - 1 >= distance[m + 1][n]) {
+                    m = m + 1;
+                } else if (map[m - 1][n] != '1' && charge - 1 >= distance[m - 1][n]) {
+                    m = m - 1;
+                } else if (map[m][n + 1] != '1' && charge - 1 >= distance[m][n + 1]) {
+                    n = n + 1;
+                } else if (map[m][n - 1] != '1' && charge - 1 >= distance[m][n - 1]) {
+                    n = n - 1;
+                } else {
                     break;
-                finish[m][n] = true;
-                ++cleaned_num;
+                }
                 ++steps;
                 --charge;
-                cout << m << ' ' << n << endl;
+                fout << m << ' ' << n << endl;
+                if (m == start[0] && n == start[1])
+                    break;
             }
             dist = distance[m][n];
             for (int i = 0; i < dist; ++i) {
@@ -265,13 +285,13 @@ public:
                     ++cleaned_num;
                 }
                 ++steps;
-                cout << m << ' ' << n << endl;
+                fout << m << ' ' << n << endl;
             }
             delete path;
         }
     }
-    void print() {
-        cout << steps << endl;
+    int getSteps() {
+        return steps;
     }
 };
 
@@ -279,18 +299,18 @@ void check_test_case(char **map, int row, int col, int battery) {
     int number_of_R = 0;
 
     if (battery > 2147483647) {
-        cout << "Valid capacity of battery!";
+        fout << "Valid capacity of battery!";
         exit(-1);
     }
     for (int i = 0; i < row; ++i) {
         for (int j = 0; j < col; ++j) {
             if (map[i][j] != '1' && map[i][j] != '0' && map[i][j] != 'R') {
-                cout << "Exist invalid parameter!";
+                fout << "Exist invalid parameter!";
                 exit(-1);
             }
             if (i == 0 || i == row - 1 || j == 0 || j == col - 1) {
                 if (map[i][j] == '0') {
-                    cout << "Exist invalid parameter!";
+                    fout << "Exist invalid parameter!";
                     exit(-1);
                 }
             }
@@ -299,7 +319,7 @@ void check_test_case(char **map, int row, int col, int battery) {
         }
     }
     if (number_of_R != 1) {
-        cout << "Valid number of R!";
+        fout << "Valid number of R!";
         exit(-1);
     }
 }
@@ -309,9 +329,9 @@ int main() {
     int battery;
     char **map;
 
-    cin >> row >> col >> battery;
+    fin >> row >> col >> battery;
     if (row > 1000 || col > 1000) {
-        cout << "Invalid size!";
+        fout << "Invalid size!";
         exit(-1);
     }
     map = new char*[row];
@@ -319,15 +339,29 @@ int main() {
         char input;
         map[i] = new char[col];
         for (int j = 0; j < col; ++j) {
-            cin >> input;
+            fin >> input;
             map[i][j] = input;
         }
     }
     check_test_case(map, row, col, battery);
-    
     graph g(map, row, col, battery);
     g.BFS_check();
     g.cleaning();
-    g.print();
+    fin.close();
+    fout.close();
+
+    int m, n;
+    int steps = g.getSteps();
+
+    ifstream fin("tmp.data");
+    ofstream fout("floor.output");
+
+    fout << steps << endl;
+    for (int i = 0; i <= steps; ++i) {
+        fin >> m >> n;
+        fout << m << ' ' << n << endl;
+    }
+    fin.close();
+    fout.close();
     return 0;
 }
