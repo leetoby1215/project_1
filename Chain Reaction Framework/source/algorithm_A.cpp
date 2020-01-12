@@ -2,9 +2,11 @@
 #include <stdlib.h>
 #include <time.h>
 #include "../include/algorithm.h"
-
 using namespace std;
 
+#define w 0
+#define r 1
+#define b 2
 /******************************************************
  * In your algorithm, you can just use the the funcitons
  * listed by TA to get the board information.(functions 
@@ -24,52 +26,61 @@ using namespace std;
  * 3. The function that return the color fo the cell(row, col)
  * 4. The function that print out the current board statement
 *************************************************************************/
+class game;
 
+class node {
+    friend class game;
+    private:
+        int score;
+        int color;
+        int orb;
+        bool is_critical;
+    public:
+        node();
+};
+
+node::node() {
+    score = 0;
+    color = w;
+    orb = 0;
+    is_critical = 0;
+}
+
+class game {
+    private:
+        node*** arr;
+        int high_score_index[2];
+    public:
+        game();
+        void get_node_property(Board board);
+        void evaluate_score();
+        void check_highest_score();
+};
+
+game::game() {
+    arr = new node**[5];
+    for (int i = 0; i < 5; i++) {
+        arr[i] = new node*[6];
+        for (int j = 0; j < 6; j++) {
+            arr[i][j] = new node();
+        }
+    }
+}
+
+void game::get_node_property(Board board) {
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 6; j++) {
+            arr[i][j]->color = board.get_cell_color(i, j);
+            arr[i][j]->orb = board.get_orbs_num(i, j);
+        }
+    }
+}
 
 void algorithm_A(Board board, Player player, int index[]){
-    
-    // cout << board.get_capacity(0, 0) << endl;
-    // cout << board.get_orbs_num(0, 0) << endl;
-    // cout << board.get_cell_color(0, 0) << endl;
-    // board.print_current_board(0, 0, 0);
-    system("pause");
-    //////////// Random Algorithm ////////////
-    // Here is the random algorithm for your reference, you can delete or comment it.
     srand(time(NULL));
     int row, col;
     int color = player.get_color();
-    
-    while(1) {
-        if (board.get_cell_color(0, 0) == 'w') {
-            if (!(board.get_cell_color(0, 1) != color && board.get_orbs_num(0, 1) > 1) && !(board.get_cell_color(1, 0) != color && board.get_orbs_num(1, 0) > 1)) {
-                row = 0; col = 0;
-                break;
-            }
-        } else if (board.get_cell_color(4, 0) == 'w') {
-            if (!(board.get_cell_color(4, 1) != color && board.get_orbs_num(4, 1) > 1) && !(board.get_cell_color(3, 0) != color && board.get_orbs_num(3, 0) > 1)) {
-                row = 4; col = 0;
-                break;
-            }
-        } else if (board.get_cell_color(4, 5) == 'w') {
-            if (!(board.get_cell_color(4, 4) != color && board.get_orbs_num(4, 4) > 1) && !(board.get_cell_color(3, 5) != color && board.get_orbs_num(3, 5) > 1)) {
-                row = 4; col = 5;
-                break;
-            }
-        } else if (board.get_cell_color(0, 5) == 'w') {
-            if (!(board.get_cell_color(0, 4) != color && board.get_orbs_num(0, 4) > 1) && !(board.get_cell_color(1, 5) != color && board.get_orbs_num(1, 5) > 1)) {
-                row = 0; col = 5;
-                break;
-            }
-        }
-        for (int i = 1; i < 5) {
-            if (board.get_cell_color(0, i) == 'w') {
-                
-            }
-        }
-            row = rand() % 5;
-            col = rand() % 6;
-            if(board.get_cell_color(row, col) == color || board.get_cell_color(row, col) == 'w') break;
-    }
+
 
     index[0] = row;
     index[1] = col;

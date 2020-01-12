@@ -3,7 +3,7 @@
 
 using namespace std;
 
-Player::Player(char col){
+Player::Player(int col){
     color = col;
     illegal = false;
 }
