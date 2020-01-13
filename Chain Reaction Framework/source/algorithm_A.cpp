@@ -83,6 +83,8 @@ void game::get_node_property(Board board) {
 void game::evaluate_score(Board board, int x, int y) {
     int my_cell = 0;
     int enemy_cell = 0;
+    int my_critical_cell = 0;
+    int my_critical_cell_alone = 0;
     for (int i = 0; i < 5; i++) {
         for (int j = 0; j < 6; j++) {
             if (arr[i][j]->color == ME)
@@ -98,17 +100,85 @@ void game::evaluate_score(Board board, int x, int y) {
     for (int i = 0; i < 5; i++) {
         for (int j = 0; j < 6; j++) {
             if (arr[i][j]->color == ME) {
-                if (i - 1 >= 0 && arr[i - 1][j]->color == ENEMY && arr[i - 1][j]->is_critical == true)
+                arr[i][j]->score++;
+                if (arr[i][j]->is_critical)
+                    my_critical_cell++;
+                if (i - 1 >= 0 && arr[i - 1][j]->color == ENEMY && arr[i - 1][j]->is_critical)
                     arr[x][y]->score -= (5 - arr[i - 1][j]->critical_mass);
-                if (i + 1 < 5 && arr[i + 1][j]->color == ENEMY && arr[i + 1][j]->is_critical == true)
+                if (i + 1 < 5 && arr[i + 1][j]->color == ENEMY && arr[i + 1][j]->is_critical)
                     arr[x][y]->score -= (5 - arr[i + 1][j]->critical_mass);
-                if (j - 1 >= 0 && arr[i][j - 1]->color == ENEMY && arr[i][j - 1]->is_critical == true)
+                if (j - 1 >= 0 && arr[i][j - 1]->color == ENEMY && arr[i][j - 1]->is_critical)
                     arr[x][y]->score -= (5 - arr[i][j - 1]->critical_mass);
-                if (j + 1 < 6 && arr[i][j + 1]->color == ENEMY && arr[i][j + 1]->is_critical == true)
+                if (j + 1 < 6 && arr[i][j + 1]->color == ENEMY && arr[i][j + 1]->is_critical)
                     arr[x][y]->score -= (5 - arr[i][j + 1]->critical_mass);
             }
         }
     }
+    if (arr[0][0]->color == ME && (arr[1][0]->color != ENEMY || !arr[1][0]->is_critical) && (arr[0][1]->color != ENEMY || !arr[0][1]->is_critical)) {
+        if (arr[0][0]->is_critical)
+            arr[x][y]->score += 2;
+        arr[x][y]->score += 3;
+    }
+    if (arr[4][0]->color == ME && (arr[3][0]->color != ENEMY || !arr[3][0]->is_critical) && (arr[4][1]->color != ENEMY || !arr[4][1]->is_critical)) {
+        if (arr[4][0]->is_critical)
+            arr[x][y]->score += 2;
+        arr[x][y]->score += 3;
+    }
+    if (arr[4][5]->color == ME && (arr[3][5]->color != ENEMY || !arr[3][5]->is_critical) && (arr[4][4]->color != ENEMY || !arr[4][4]->is_critical)) {
+        if (arr[4][5]->is_critical)
+            arr[x][y]->score += 2;
+        arr[x][y]->score += 3;
+    }
+    if (arr[0][5]->color == ME && (arr[1][5]->color != ENEMY || !arr[1][5]->is_critical) && (arr[0][4]->color != ENEMY || !arr[0][4]->is_critical)) {
+        if (arr[0][5]->is_critical)
+            arr[x][y]->score += 2;
+        arr[x][y]->score += 3;
+    }
+    for (int i = 1; i <= 3; i++) {
+        if (arr[i][0]->color == ME && (arr[i - 1][0]->color != ENEMY || !arr[i - 1][0]->is_critical) && (arr[i][1]->color != ENEMY || !arr[i][1]->is_critical) && (arr[i + 1][0]->color != ENEMY || !arr[i + 1][0]->is_critical)) {
+            if (arr[i][0]->is_critical)
+                arr[x][y]->score += 2;
+            arr[x][y]->score += 2;
+        }
+        if (arr[i][5]->color == ME && (arr[i - 1][5]->color != ENEMY || !arr[i - 1][5]->is_critical) && (arr[i][4]->color != ENEMY || !arr[i][4]->is_critical) && (arr[i + 1][5]->color != ENEMY || !arr[i + 1][5]->is_critical)) {
+            if (arr[i][5]->is_critical)
+                arr[x][y]->score += 2;
+            arr[x][y]->score += 2;
+        }
+    }
+    for (int i = 1; i <= 4; i++) {
+        if (arr[0][i]->color == ME && (arr[0][i - 1]->color != ENEMY || !arr[0][i - 1]->is_critical) && (arr[1][i]->color != ENEMY || !arr[1][i]->is_critical) && (arr[0][i + 1]->color != ENEMY || !arr[0][i + 1]->is_critical)) {
+            if (arr[0][i]->is_critical)
+                arr[x][y]->score += 2;
+            arr[x][y]->score += 2;
+        }
+        if (arr[4][i]->color == ME && (arr[4][i - 1]->color != ENEMY || !arr[4][i - 1]->is_critical) && (arr[3][i]->color != ENEMY || !arr[3][i]->is_critical) && (arr[4][i + 1]->color != ENEMY || !arr[4][i + 1]->is_critical)) {
+            if (arr[4][i]->is_critical)
+                arr[x][y]->score += 2;
+            arr[x][y]->score += 2;
+        }
+    }
+    if (arr[0][0]->color == ME && (arr[1][0]->color != ME || !arr[1][0]->is_critical) && (arr[0][1]->color != ME || !arr[0][1]->is_critical))
+        my_critical_cell_alone++;
+    if (arr[4][0]->color == ME && (arr[3][0]->color != ME || !arr[3][0]->is_critical) && (arr[4][1]->color != ME || !arr[4][1]->is_critical))
+        my_critical_cell_alone++;
+    if (arr[4][5]->color == ME && (arr[3][5]->color != ME || !arr[3][5]->is_critical) && (arr[4][4]->color != ME || !arr[4][4]->is_critical))
+        my_critical_cell_alone++;
+    if (arr[0][5]->color == ME && (arr[1][5]->color != ME || !arr[1][5]->is_critical) && (arr[0][4]->color != ME || !arr[0][4]->is_critical))
+        my_critical_cell_alone++;
+    for (int i = 1; i <= 3; i++) {
+        if (arr[i][0]->color == ME && (arr[i - 1][0]->color != ME || !arr[i - 1][0]->is_critical) && (arr[i][1]->color != ME || !arr[i][1]->is_critical) && (arr[i + 1][0]->color != ME || !arr[i + 1][0]->is_critical))
+            my_critical_cell_alone++;
+        if (arr[i][5]->color == ME && (arr[i - 1][5]->color != ME || !arr[i - 1][5]->is_critical) && (arr[i][4]->color != ME || !arr[i][4]->is_critical) && (arr[i + 1][5]->color != ME || !arr[i + 1][5]->is_critical))
+            my_critical_cell_alone++;
+    }
+    for (int i = 1; i <= 4; i++) {
+        if (arr[0][i]->color == ME && (arr[0][i - 1]->color != ME || !arr[0][i - 1]->is_critical) && (arr[1][i]->color != ME || !arr[1][i]->is_critical) && (arr[0][i + 1]->color != ME || !arr[0][i + 1]->is_critical))
+            my_critical_cell_alone++;
+        if (arr[4][i]->color == ME && (arr[4][i - 1]->color != ME || !arr[4][i - 1]->is_critical) && (arr[3][i]->color != ME || !arr[3][i]->is_critical) && (arr[4][i + 1]->color != ME || !arr[4][i + 1]->is_critical))
+            my_critical_cell_alone++;
+    }
+    arr[x][y]->score += 2 * (my_critical_cell - my_critical_cell_alone);
 }
 
 void game::check_highest_score() {
@@ -116,7 +186,6 @@ void game::check_highest_score() {
 
     for (int i = 0; i < 5; i++) {
         for (int j = 0; j < 6; j++) {
-            cout << arr[i][j]->color << ' ' << arr[i][j]->score << endl;
             if (arr[i][j]->color != ENEMY && arr[i][j]->score > score) {
                 score = arr[i][j]->score;
                 high_score_index_x = i;
@@ -124,7 +193,6 @@ void game::check_highest_score() {
             }
         }
     }
-    cout << score << ' ';
 }
 
 void game::reset() {
@@ -160,6 +228,5 @@ void algorithm_A(Board board, Player player, int index[]){
     simulation.reset();
     index[0] = simulation.get_highest_score_index_x();
     index[1] = simulation.get_highest_score_index_y();
-    cout << index[0] << ' ' << index[1];
     system("pause");
 }
