@@ -228,5 +228,4 @@ void algorithm_A(Board board, Player player, int index[]){
     simulation.reset();
     index[0] = simulation.get_highest_score_index_x();
     index[1] = simulation.get_highest_score_index_y();
-    system("pause");
 }
