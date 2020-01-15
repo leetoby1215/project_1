@@ -158,6 +158,13 @@ void game::evaluate_score(Board board, int x, int y) {
             arr[x][y]->score += 2;
         }
     }
+    for (int i = 1; i <= ROW - 2; i++) {
+        for (int j = 1; j <= COL - 2; j++) {
+            if (arr[i][j]->color == ME && (arr[i - 1][j]->color != ENEMY || !arr[i - 1][j]->is_critical) && (arr[i + 1][j]->color != ENEMY || !arr[i + 1][j]->is_critical) && (arr[i][j - 1]->color != ENEMY || !arr[i][j - 1]->is_critical) && (arr[i][j + 1]->color != ENEMY || !arr[i][j + 1]->is_critical))
+                if (arr[i][j]->is_critical)
+                    arr[x][y]->score += 2;
+        }
+    }
     if (arr[0][0]->color == ME && (arr[1][0]->color != ME || !arr[1][0]->is_critical) && (arr[0][1]->color != ME || !arr[0][1]->is_critical))
         my_critical_cell_alone++;
     if (arr[ROW - 1][0]->color == ME && (arr[ROW - 2][0]->color != ME || !arr[ROW - 2][0]->is_critical) && (arr[ROW - 1][1]->color != ME || !arr[ROW - 1][1]->is_critical))
@@ -212,7 +219,6 @@ int game::get_highest_score_index_y() {
 }
 
 void algorithm_A(Board board, Player player, int index[]){
-    srand(time(NULL));
     game simulation(&player);
     for (int i = 0; i < ROW; i++) {
         for (int j = 0; j < COL; j++) {
