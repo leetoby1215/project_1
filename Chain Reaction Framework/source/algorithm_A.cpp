@@ -33,11 +33,13 @@ node::node() {
 class game {
     private:
         node*** arr;
+        Player* opponent;
         char color;
+        char virtual_color;
         int high_score_index_x;
         int high_score_index_y;
     public:
-        game(Player* player);
+        game(Player* player, Board board);
         void get_node_property(Board board);
         void evaluate_score(Board board, int x, int y);
         void check_highest_score();
@@ -46,8 +48,19 @@ class game {
         int get_highest_score_index_y();
 };
 
-game::game(Player* player) {
+game::game(Player* player, Board board) {
     color = player->get_color();
+    virtual_color = 'v';
+    for (int i = 0; i < ROW; i++) {
+        for (int j = 0; j < COL; j++) {
+            if (board.get_cell_color(i, j) != 'w' && board.get_cell_color(i, j) != player->get_color()) {
+                virtual_color = board.get_cell_color(i, j);
+                i += ROW;
+                j += COL;
+            }
+        }
+    }
+    opponent = new Player(virtual_color);
     high_score_index_x = 0;
     high_score_index_y = 0;
     arr = new node**[ROW];
@@ -81,22 +94,36 @@ void game::get_node_property(Board board) {
 }
 
 void game::evaluate_score(Board board, int x, int y) {
-    int my_cell = 0;
     int enemy_cell = 0;
     int my_critical_cell = 0;
     int my_critical_cell_alone = 0;
     for (int i = 0; i < ROW; i++) {
         for (int j = 0; j < COL; j++) {
-            if (arr[i][j]->color == ME)
-                my_cell++;
             if (arr[i][j]->color == ENEMY)
                 enemy_cell++;
         }
     }
-    if (my_cell == 0)
-        arr[x][y]->score -= 9999;
-    if (enemy_cell == 0)
+    if (enemy_cell == 0) {
         arr[x][y]->score += 9999;
+        return;
+    }
+    for (int i = 0; i < ROW; i++) {
+        for (int j = 0; j < COL; j++) {
+            Board second_board = board;
+            if (board.get_cell_color(i, j) == virtual_color) {
+                int my_cell = 0;
+                second_board.place_orb(i, j, opponent);
+                for (int m = 0; m < ROW; m++) {
+                    for (int n = 0; n < COL; n++) {
+                        if (second_board.get_cell_color(m, n) == color)
+                            my_cell++;
+                    }
+                }
+                if (my_cell == 0)
+                    arr[x][y]->score -= 9999;
+            }
+        }
+    }
     for (int i = 0; i < ROW; i++) {
         for (int j = 0; j < COL; j++) {
             if (arr[i][j]->color == ME) {
@@ -219,7 +246,7 @@ int game::get_highest_score_index_y() {
 }
 
 void algorithm_A(Board board, Player player, int index[]){
-    game simulation(&player);
+    game simulation(&player, board);
     for (int i = 0; i < ROW; i++) {
         for (int j = 0; j < COL; j++) {
             if (board.get_cell_color(i, j) == 'w' || board.get_cell_color(i, j) == player.get_color()) {
